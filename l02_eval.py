@@ -14,9 +14,11 @@ Environment:
     SERVICE_URL        local stand, default http://localhost:8000
     STAND_DIR          paypilot-stand checkout; the engines are imported from it
     ANTHROPIC_API_KEY  key for the judge; the stand's own key will do
-    OPENAI_API_KEY     the same for a stand that runs on OpenAI; Anthropic wins
-                       when both are set
-    JUDGE_MODEL        default claude-haiku-4-5 (Anthropic) or gpt-4.1-mini (OpenAI)
+    OPENAI_API_KEY     the same for a stand that runs on OpenAI
+    GEMINI_API_KEY     a Google AI Studio key for a Gemini judge; when several
+                       keys are set, Anthropic wins, then OpenAI, then Gemini
+    JUDGE_MODEL        default claude-haiku-4-5 (Anthropic), gpt-4.1-mini (OpenAI)
+                       or gemini-3.5-flash-lite (Gemini)
     AGENT_PRICE_IN, AGENT_PRICE_OUT
                        agent price in USD per million tokens, default 1 / 5
 
@@ -48,7 +50,7 @@ CLOCK = "2026-09-15T10:00:00Z"
 BASELINE = "clean"
 LLM_METRICS = ("faithfulness", "answer_relevancy", "hallucination")
 JUDGE_DEFAULTS = {
-    "anthropic": "claude-haiku-4-5", 
+    "anthropic": "claude-haiku-4-5",
     "openai": "gpt-4.1-mini",
     "gemini": "gemini-3.5-flash-lite",
 }
@@ -203,13 +205,13 @@ def domain_check(case: dict, facts: dict | None, answer: str):
 
 def judge_provider() -> str:
     for provider, variable in (
-        ("anthropic", "ANTHROPIC_API_KEY"), 
+        ("anthropic", "ANTHROPIC_API_KEY"),
         ("openai", "OPENAI_API_KEY"),
-        ("gemini", "GEMINI_API_KEY")
+        ("gemini", "GEMINI_API_KEY"),
     ):
         if os.environ.get(variable):
             return provider
-    raise SystemExit("the judge needs ANTHROPIC_API_KEY / OPENAI_API_KEY / GEMINI_API_KEY"
+    raise SystemExit("the judge needs ANTHROPIC_API_KEY, OPENAI_API_KEY or GEMINI_API_KEY "
                      "(or run with --metrics domain)")
 
 

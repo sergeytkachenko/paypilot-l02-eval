@@ -80,9 +80,10 @@ docker compose run --rm -T eval --runs 3 --baseline-runs 2 2>&1 | tee reports/fu
 | Змінна | Що це |
 |---|---|
 | `STAND_DIR` | шлях до каталогу `paypilot-stand`, за замовчуванням `../paypilot-stand`. Windows: `C:/paypilot/paypilot-stand` |
-| `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` | ключ судді, той самий, що в `.env` стенду; якщо задано обидва, береться Anthropic |
+| `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` | ключ судді, той самий, що в `.env` стенду; якщо задано кілька ключів, береться Anthropic, потім OpenAI, потім Gemini |
+| `GEMINI_API_KEY` | ключ Google AI Studio, якщо суддею буде Gemini. Якщо образ зібраний до появи Gemini, після `git pull` один раз виконай `docker compose build` |
 | `ANTHROPIC_BASE_URL`, `ANTHROPIC_AUTH_TOKEN` | для стенду через OpenRouter: `https://openrouter.ai/api` і той самий ключ |
-| `JUDGE_MODEL` | суддя, за замовчуванням `claude-haiku-4-5` або `gpt-4.1-mini` |
+| `JUDGE_MODEL` | суддя, за замовчуванням `claude-haiku-4-5`, `gpt-4.1-mini` або `gemini-3.5-flash-lite` |
 | `EVAL_STAND_URL` | адреса стенду зсередини контейнера, див. нижче |
 | `STAND_PORT`, `STAND_PROFILE` | окремий стенд: порт на `127.0.0.1` (за замовчуванням `8010`) і стартовий профіль (`lesson-02`) |
 | `AGENT_PRICE_IN`, `AGENT_PRICE_OUT` | ціна агента, USD за 1M токенів, для рядка вартості |

@@ -47,7 +47,11 @@ SERVICE_URL = os.environ.get("SERVICE_URL", "http://localhost:8000").rstrip("/")
 CLOCK = "2026-09-15T10:00:00Z"
 BASELINE = "clean"
 LLM_METRICS = ("faithfulness", "answer_relevancy", "hallucination")
-JUDGE_DEFAULTS = {"anthropic": "claude-haiku-4-5", "openai": "gpt-4.1-mini"}
+JUDGE_DEFAULTS = {
+    "anthropic": "claude-haiku-4-5", 
+    "openai": "gpt-4.1-mini",
+    "gemini": "gemini-3.5-flash-lite",
+}
 # Judge calls DeepEval 4.2 makes per metric with include_reason=True:
 # faithfulness = truths, claims, verdicts, reason; relevancy = statements,
 # verdicts, reason; hallucination = verdicts, reason.
@@ -190,16 +194,44 @@ def domain_check(case: dict, facts: dict | None, answer: str):
 # --- judge -------------------------------------------------------------------
 
 def judge_provider() -> str:
-    for provider, variable in (("anthropic", "ANTHROPIC_API_KEY"), ("openai", "OPENAI_API_KEY")):
+    for provider, variable in (
+        ("anthropic", "ANTHROPIC_API_KEY"), 
+        ("openai", "OPENAI_API_KEY"),
+        ("gemini", "GEMINI_API_KEY")
+    ):
         if os.environ.get(variable):
             return provider
-    raise SystemExit("the judge needs ANTHROPIC_API_KEY or OPENAI_API_KEY "
+    raise SystemExit("the judge needs ANTHROPIC_API_KEY / OPENAI_API_KEY / GEMINI_API_KEY"
                      "(or run with --metrics domain)")
 
 
 def make_judge(provider: str, model: str):
-    from deepeval.models import AnthropicModel, OpenAIModel
-    base = AnthropicModel if provider == "anthropic" else OpenAIModel
+    from deepeval.models import AnthropicModel, OpenAIModel, GeminiModel
+
+    if provider == "anthropic":
+        base = AnthropicModel
+        kwargs = {
+            "model": model,
+            "temperature": 0,
+        }
+
+    elif provider == "openai":
+        base = OpenAIModel
+        kwargs = {
+            "model": model,
+            "temperature": 0,
+        }
+
+    elif provider == "gemini":
+        base = GeminiModel
+        kwargs = {
+            "model": model,
+            "api_key": os.environ["GEMINI_API_KEY"],
+            "temperature": 0,
+        }
+
+    else:
+        raise ValueError(f"Unsupported judge provider: {provider}")
 
     class CountingJudge(base):
         """Counts real judge calls, so the formula can be checked against them."""
@@ -220,7 +252,7 @@ def make_judge(provider: str, model: str):
         async def a_generate(self, *args, **kwargs):
             return self._count(await super().a_generate(*args, **kwargs))
 
-    return CountingJudge(model=model, temperature=0)
+    return CountingJudge(**kwargs)
 
 
 def measure(name: str, judge, test_case) -> dict:

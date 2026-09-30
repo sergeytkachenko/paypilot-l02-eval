@@ -58,12 +58,20 @@ GREEN = 0.85  # "faithfulness above 0.85" from step 4 of the lab
 # Affirmative-only pattern from the course runner plus two "still" phrasings:
 # a bare "eligible" or "within the window" also matches the negated sentence
 # and would fail every clean run.
-AFFIRMATIVE = (r"\byou can(?:\s+still)?\s+(?:dispute|open|file)\b"
-               r"|\bis(?:\s+still)?\s+eligible\b"
+AFFIRMATIVE = (r"\byou\s+can(?:\s+(?:absolutely|certainly|definitely))?(?:\s+still)?\s+(?:dispute|open|file)\b"
+               r"|\byou(?:['’]re|\s+are)(?:\s+still)?\s+able\s+to\s+(?:dispute|open|file)\b"
+               r"|\bis(?:\s+(?:still|currently|now))?\s+eligible\b"
                r"|\bremains\s+eligible\b"
-               r"|\ball\s+(?:eligibility\s+)?checks\s+(?:have\s+)?passed\b"
-               r"|\byou(?:'re|\s+are)\s+still\s+within\b"
+               r"|(?<!not\s)\ball\s+(?:(?:eligibility|compliance|status|timeline|window|dispute|and)[,\s]+){0,6}"
+               r"checks\s+(?:have\s+)?passed\b"
+               r"|(?<!not\s)(?<!n['’]t\s)\b(?:passes|passed)\s+all\s+"
+               r"(?:(?:eligibility|compliance|status|timeline|window|dispute|and)[,\s]+){0,6}checks\b"
+               r"|\byou(?:['’]re|\s+are)\s+still\s+within\b"
                r"|\byou\s+still\s+have\s+(?:time|until|\d+\s+days?)\b")
+CONDITIONAL = (r"\b(?:whether|if)\s+(?:(?:a|the|this|that|your|my)\s+)?[\w-]+"
+               r"(?:\s+(?:is|remains)(?:\s+(?:still|currently|now))?\s+eligible"
+               r"|\s+can(?:\s+still)?\s+(?:dispute|open|file)"
+               r"|(?:\s+are|['’]re)(?:\s+still)?\s+able\s+to\s+(?:dispute|open|file))\b")
 # Thousands groups only as ",ddd" or " ddd": the course runner's looser
 # pattern glues "1,000, 5,000" into one number.
 NUM_RE = re.compile(r"\d{1,3}(?:[,\u00a0\u202f ]\d{3}(?!\d))+(?:\.\d+)?|\d+(?:\.\d+)?")
@@ -172,7 +180,7 @@ def domain_check(case: dict, facts: dict | None, answer: str):
     if kind == "no_offer":
         if facts[check["field"]] is not False:
             raise ValueError(f"{case['id']}: no_offer needs the engine to say no")
-        m = re.search(AFFIRMATIVE, answer, re.I)
+        m = re.search(AFFIRMATIVE, re.sub(CONDITIONAL, " ", answer, flags=re.I), re.I)
         return m is None, "engine: not eligible" + (f"; answer offers it: {m.group(0)!r}" if m else "")
     if kind == "not_regex":
         m = re.search(check["pattern"], answer, re.I)

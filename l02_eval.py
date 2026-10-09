@@ -55,9 +55,12 @@ JUDGE_DEFAULTS = {
     "openai": "gpt-4.1-mini",
     "gemini": "gemini-3.5-flash-lite",
 }
-ANTHROPIC_MODELS_REJECTING_TEMPERATURE = ("claude-haiku-5-5",)
-ANTHROPIC_PRICES_MISSING_FROM_DEEPEVAL = {
-    "claude-haiku-5-5": (0.10 / 1e6, 0.50 / 1e6),
+ANTHROPIC_MODELS_UNKNOWN_TO_DEEPEVAL = {
+    "claude-haiku-5-5": {
+        "accepts_temperature": False,
+        "cost_per_input_token": 0.10 / 1e6,
+        "cost_per_output_token": 0.50 / 1e6,
+    },
 }
 # Judge calls DeepEval 4.2 makes per metric with include_reason=True:
 # faithfulness = truths, claims, verdicts, reason; relevancy = statements,
@@ -220,17 +223,26 @@ def judge_provider() -> str:
                      "(or run with --metrics domain)")
 
 
+def anthropic_model_facts(model: str) -> dict:
+    name = model.split("/")[-1]
+    for family, facts in ANTHROPIC_MODELS_UNKNOWN_TO_DEEPEVAL.items():
+        if name.startswith(family):
+            return facts
+    return {}
+
+
 def make_judge(provider: str, model: str):
     from deepeval.models import AnthropicModel, OpenAIModel, GeminiModel
 
     if provider == "anthropic":
         base = AnthropicModel
+        known = anthropic_model_facts(model)
         kwargs = {"model": model}
-        if model not in ANTHROPIC_MODELS_REJECTING_TEMPERATURE:
+        if known.get("accepts_temperature", True):
             kwargs["temperature"] = 0
-        prices = ANTHROPIC_PRICES_MISSING_FROM_DEEPEVAL.get(model)
-        if prices:
-            kwargs["cost_per_input_token"], kwargs["cost_per_output_token"] = prices
+        for field in ("cost_per_input_token", "cost_per_output_token"):
+            if field in known:
+                kwargs[field] = known[field]
 
     elif provider == "openai":
         base = OpenAIModel

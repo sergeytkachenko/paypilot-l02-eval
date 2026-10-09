@@ -24,6 +24,11 @@ Python локально не потрібен: скрипт запускаєть
 
 Деталі кожного кроку нижче.
 
+Склонував раніше за 09.10.2026 — почни з `git pull`. Суддя за замовчуванням
+тепер `claude-haiku-5-5`, а стара версія скрипта надсилає цій моделі
+`temperature` і отримує у відповідь 400 з текстом
+"`temperature` is deprecated for this model".
+
 ## Що в репозиторії
 
 | Файл | Що це |
@@ -58,7 +63,7 @@ docker compose build        # один раз, близько хвилини
 # план і кількість викликів, нічого не викликає
 docker compose run --rm eval --runs 3 --baseline-runs 2 --dry-run
 
-# повний прогін: clean двічі, lesson-02 тричі; ≈6 хв, ≈$1 на Haiku 4.5
+# повний прогін: clean двічі, lesson-02 тричі; ≈6 хв, ≈$0.1 на Haiku 5.5
 docker compose run --rm eval --runs 3 --baseline-runs 2
 ```
 
@@ -83,10 +88,10 @@ docker compose run --rm -T eval --runs 3 --baseline-runs 2 2>&1 | tee reports/fu
 | `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` | ключ судді, той самий, що в `.env` стенду; якщо задано кілька ключів, береться Anthropic, потім OpenAI, потім Gemini |
 | `GEMINI_API_KEY` | ключ Google AI Studio, якщо суддею буде Gemini. Якщо образ зібраний до появи Gemini, після `git pull` один раз виконай `docker compose build` |
 | `ANTHROPIC_BASE_URL`, `ANTHROPIC_AUTH_TOKEN` | для стенду через OpenRouter: `https://openrouter.ai/api` і той самий ключ |
-| `JUDGE_MODEL` | суддя, за замовчуванням `claude-haiku-4-5`, `gpt-4.1-mini` або `gemini-3.5-flash-lite` |
+| `JUDGE_MODEL` | суддя, за замовчуванням `claude-haiku-5-5`, `gpt-4.1-mini` або `gemini-3.5-flash-lite`. Порожнє значення залишає дефолт кіту — так і треба |
 | `EVAL_STAND_URL` | адреса стенду зсередини контейнера, див. нижче |
 | `STAND_PORT`, `STAND_PROFILE` | окремий стенд: порт на `127.0.0.1` (за замовчуванням `8010`) і стартовий профіль (`lesson-02`) |
-| `AGENT_PRICE_IN`, `AGENT_PRICE_OUT` | ціна агента, USD за 1M токенів, для рядка вартості |
+| `AGENT_PRICE_IN`, `AGENT_PRICE_OUT` | ціна агента, USD за 1M токенів, для рядка вартості. За замовчуванням `0.1` / `0.5` — прайс Haiku 5.5 для промптів до 100k токенів |
 
 ## Адреса стенду
 

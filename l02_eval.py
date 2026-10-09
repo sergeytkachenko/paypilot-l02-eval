@@ -17,10 +17,11 @@ Environment:
     OPENAI_API_KEY     the same for a stand that runs on OpenAI
     GEMINI_API_KEY     a Google AI Studio key for a Gemini judge; when several
                        keys are set, Anthropic wins, then OpenAI, then Gemini
-    JUDGE_MODEL        default claude-haiku-4-5 (Anthropic), gpt-4.1-mini (OpenAI)
+    JUDGE_MODEL        default claude-haiku-5-5 (Anthropic), gpt-4.1-mini (OpenAI)
                        or gemini-3.5-flash-lite (Gemini)
     AGENT_PRICE_IN, AGENT_PRICE_OUT
-                       agent price in USD per million tokens, default 1 / 5
+                       agent price in USD per million tokens, default 0.1 / 0.5,
+                       the Haiku 5.5 price for prompts under 100k tokens
 
 Point it at a local stand only: it switches profiles, sets the clock and
 resets the data, which on a shared stand changes everyone's session.
@@ -50,9 +51,13 @@ CLOCK = "2026-09-15T10:00:00Z"
 BASELINE = "clean"
 LLM_METRICS = ("faithfulness", "answer_relevancy", "hallucination")
 JUDGE_DEFAULTS = {
-    "anthropic": "claude-haiku-4-5",
+    "anthropic": "claude-haiku-5-5",
     "openai": "gpt-4.1-mini",
     "gemini": "gemini-3.5-flash-lite",
+}
+ANTHROPIC_MODELS_REJECTING_TEMPERATURE = ("claude-haiku-5-5",)
+ANTHROPIC_PRICES_MISSING_FROM_DEEPEVAL = {
+    "claude-haiku-5-5": (0.10 / 1e6, 0.50 / 1e6),
 }
 # Judge calls DeepEval 4.2 makes per metric with include_reason=True:
 # faithfulness = truths, claims, verdicts, reason; relevancy = statements,
@@ -220,10 +225,12 @@ def make_judge(provider: str, model: str):
 
     if provider == "anthropic":
         base = AnthropicModel
-        kwargs = {
-            "model": model,
-            "temperature": 0,
-        }
+        kwargs = {"model": model}
+        if model not in ANTHROPIC_MODELS_REJECTING_TEMPERATURE:
+            kwargs["temperature"] = 0
+        prices = ANTHROPIC_PRICES_MISSING_FROM_DEEPEVAL.get(model)
+        if prices:
+            kwargs["cost_per_input_token"], kwargs["cost_per_output_token"] = prices
 
     elif provider == "openai":
         base = OpenAIModel
@@ -423,8 +430,8 @@ def report(records: list, profiles: list, cases: list, passes: int, metrics: set
     judge_calls = sum(r["judge"]["calls"] for r in records)
     tok_in = sum(r["agent"]["input_tokens"] for r in records)
     tok_out = sum(r["agent"]["output_tokens"] for r in records)
-    price_in = float(os.environ.get("AGENT_PRICE_IN", "1"))
-    price_out = float(os.environ.get("AGENT_PRICE_OUT", "5"))
+    price_in = float(os.environ.get("AGENT_PRICE_IN", "0.1"))
+    price_out = float(os.environ.get("AGENT_PRICE_OUT", "0.5"))
     agent_usd = (tok_in * price_in + tok_out * price_out) / 1e6
     judge_usd = sum(r["judge"]["cost_usd"] for r in records)
     formula = formula_calls(cases, metrics) * passes

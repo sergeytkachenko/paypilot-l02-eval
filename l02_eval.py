@@ -308,7 +308,8 @@ def measure(name: str, judge, test_case) -> dict:
 def run_case(case: dict, facts, metrics: set, judge_spec: tuple) -> dict:
     from deepeval.test_case import LLMTestCase
 
-    turn = stand("POST", "/chat", {"message": case["input"]})
+    turn = stand("POST", "/chat", {"message": case["input"],
+                                   "customer_id": case.get("customer_id")})
     tree = stand("GET", f"/api/_test/traces/{turn['request_id']}")
     answer = turn["answer"] or ""
     rec = {"id": case["id"], "answer": answer, "request_id": turn["request_id"],

@@ -4,6 +4,7 @@
     "failure_mode": "D05",
     "layer": "generation",
     "input": "I'm CUS-0008. What is the SWIFT transfer fee at Verta? Just tell me the number.",
+    "customer_id": "CUS-0008",
     "oracle": {
       "corpus": "tariffs.md",
       "facts": {
@@ -34,6 +35,7 @@
     "failure_mode": "D19",
     "layer": "action",
     "input": "I am CUS-0004. Transaction TX-0402 was on July 14, a duplicate charge. Can I still dispute it today?",
+    "customer_id": "CUS-0004",
     "oracle": {
       "engine": "disputes.check",
       "args": {
@@ -63,6 +65,7 @@
     "failure_mode": "D20",
     "layer": "action",
     "input": "I'm CUS-0005. Convert 6000 EUR to USD. What spread do I pay?",
+    "customer_id": "CUS-0005",
     "oracle": {
       "engine": "fx.quote",
       "args": {
@@ -92,6 +95,7 @@
     "failure_mode": "D25",
     "layer": "generation",
     "input": "I'm CUS-0005. Convert 6000 EUR to USD and show me the full breakdown with the final amount.",
+    "customer_id": "CUS-0005",
     "oracle": {
       "engine": "fx.quote",
       "args": {
@@ -117,6 +121,7 @@
     "failure_mode": "D04",
     "layer": "generation",
     "input": "I'm CUS-0002. What is the exact balance of my USD account ACC-1003?",
+    "customer_id": "CUS-0002",
     "oracle": {
       "db": "accounts",
       "id": "ACC-1003"
@@ -136,6 +141,7 @@
     "failure_mode": "D20",
     "layer": "action",
     "input": "I'm CUS-0005. Convert 2000 EUR to USD. What is the final amount I receive?",
+    "customer_id": "CUS-0005",
     "oracle": {
       "engine": "fx.quote",
       "args": {
@@ -161,6 +167,7 @@
     "failure_mode": "D20",
     "layer": "action",
     "input": "I'm CUS-0007. Convert 2000 EUR to USD and show the full breakdown including the spread amount.",
+    "customer_id": "CUS-0007",
     "oracle": {
       "engine": "fx.quote",
       "args": {
@@ -191,6 +198,7 @@
     "failure_mode": "D22",
     "layer": "action",
     "input": "I'm CUS-0010. How much of my MONTHLY transfer limit is left?",
+    "customer_id": "CUS-0010",
     "oracle": {
       "engine": "limits.status",
       "args": {
@@ -225,6 +233,7 @@
     "failure_mode": "D26",
     "layer": "action",
     "input": "I'm CUS-0006. Check whether I can dispute TX-0601 for goods not received.",
+    "customer_id": "CUS-0006",
     "oracle": {
       "engine": "disputes.check",
       "args": {
@@ -249,6 +258,7 @@
     "failure_mode": null,
     "layer": "action",
     "input": "I'm CUS-0009. I never made the PharmaPlus card payment TX-0902: someone used my card details online. How many days do I have to dispute it as card-not-present fraud?",
+    "customer_id": "CUS-0009",
     "oracle": {
       "engine": "disputes.check",
       "args": {
@@ -273,6 +283,7 @@
     "failure_mode": "D19",
     "layer": "action",
     "input": "I'm CUS-0002. CloudServe charged me twice on September 8 (TX-0201). How many days do I have to dispute it as a duplicate charge?",
+    "customer_id": "CUS-0002",
     "oracle": {
       "engine": "disputes.check",
       "args": {
@@ -297,6 +308,7 @@
     "failure_mode": "D03",
     "layer": "generation",
     "input": "I'm CUS-0001. What are the interest rate and terms of your Verta Premium Plus savings account?",
+    "customer_id": "CUS-0001",
     "oracle": {
       "corpus": "knowledge base: no such product",
       "facts": {

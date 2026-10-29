@@ -19,6 +19,8 @@ Environment:
                        keys are set, Anthropic wins, then OpenAI, then Gemini
     JUDGE_MODEL        default claude-haiku-5-5 (Anthropic), gpt-4.1-mini (OpenAI)
                        or gemini-3.5-flash-lite (Gemini)
+    JUDGE_MAX_TOKENS   output cap of one judge call, default 4096; DeepEval's own
+                       1024 cuts the JSON verdicts on long answers
     AGENT_PRICE_IN, AGENT_PRICE_OUT
                        agent price in USD per million tokens, default 0.1 / 0.5,
                        the Haiku 5.5 price for prompts under 100k tokens
@@ -54,6 +56,12 @@ JUDGE_DEFAULTS = {
     "anthropic": "claude-haiku-5-5",
     "openai": "gpt-4.1-mini",
     "gemini": "gemini-3.5-flash-lite",
+}
+JUDGE_MAX_TOKENS_DEFAULT = 4096
+MAX_TOKENS_FIELD = {
+    "anthropic": "max_tokens",
+    "openai": "max_completion_tokens",
+    "gemini": "max_output_tokens",
 }
 ANTHROPIC_MODELS_UNKNOWN_TO_DEEPEVAL = {
     "claude-haiku-5-5": {
@@ -261,6 +269,9 @@ def make_judge(provider: str, model: str):
 
     else:
         raise ValueError(f"Unsupported judge provider: {provider}")
+
+    max_tokens = int(os.environ.get("JUDGE_MAX_TOKENS") or JUDGE_MAX_TOKENS_DEFAULT)
+    kwargs["generation_kwargs"] = {MAX_TOKENS_FIELD[provider]: max_tokens}
 
     class CountingJudge(base):
         """Counts real judge calls, so the formula can be checked against them."""

@@ -95,6 +95,7 @@ docker compose run --rm -T eval --runs 3 --baseline-runs 2 2>&1 | tee reports/fu
 | `GEMINI_API_KEY` | ключ Google AI Studio, якщо суддею буде Gemini. Якщо образ зібраний до появи Gemini, після `git pull` один раз виконай `docker compose build` |
 | `ANTHROPIC_BASE_URL`, `ANTHROPIC_AUTH_TOKEN` | для стенду через OpenRouter: `https://openrouter.ai/api` і той самий ключ |
 | `JUDGE_MODEL` | суддя, за замовчуванням `claude-haiku-5-5`, `gpt-4.1-mini` або `gemini-3.5-flash-lite`. Порожнє значення залишає дефолт кіту — так і треба |
+| `JUDGE_MAX_TOKENS` | ліміт виводу одного виклику судді, за замовчуванням `4096`. Власний ліміт DeepEval 1024 обрізає JSON вердиктів на довгих відповідях, і в `reason` з'являється `Evaluation LLM outputted an invalid JSON` |
 | `EVAL_STAND_URL` | адреса стенду зсередини контейнера, див. нижче |
 | `STAND_PORT`, `STAND_PROFILE` | окремий стенд: порт на `127.0.0.1` (за замовчуванням `8010`) і стартовий профіль (`lesson-02`) |
 | `AGENT_PRICE_IN`, `AGENT_PRICE_OUT` | ціна агента, USD за 1M токенів, для рядка вартості. За замовчуванням `0.1` / `0.5` — прайс Haiku 5.5 до 100k токенів промпту, бо курс просить виставити у стенді саме її. Твій стенд на іншій моделі — впиши її прайс, інакше рядок вартості збреше |
